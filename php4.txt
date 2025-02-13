@@ -1,0 +1,204 @@
+CREATE TABLE Classroom (
+    classroom_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    capacity INT
+);
+CREATE TABLE Teacher (
+    teacher_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(20),
+    specialization VARCHAR(50)
+);
+CREATE TABLE Course (
+    course_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    teacher_id INT,
+    FOREIGN KEY (teacher_id) REFERENCES Teacher(teacher_id)
+);
+CREATE TABLE Student (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(100),
+    dob DATE,
+    gender ENUM('Male', 'Female'),
+    classroom_id INT,
+    FOREIGN KEY (classroom_id) REFERENCES Classroom(classroom_id)
+);
+CREATE TABLE Attendance (
+    attendance_id INT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    date DATE,
+    status ENUM('Present', 'Absent'),
+    FOREIGN KEY (student_id) REFERENCES Student(student_id),
+    FOREIGN KEY (course_id) REFERENCES Course(course_id)
+);
+___________________________________________________________________________2
+----------------------------
+INSERT INTO Teacher VALUES
+(101, 'John Smith', 'john.smith@example.com', '123-456-7890', 'Mathematics'), 
+(102, 'Jane Doe', 'jane.doe@example.com', '987-654-3210', 'English'), 
+(103, 'Robert Brown', 'robert.brown@example.com', '555-666-7777', 'Science'), 
+(104, 'Emily Clark', 'emily.clark@example.com', '444-555-6666', 'History'), 
+(105, 'Michael Johnson', 'michael.johnson@example.com', '111-222-3333', 'Physics'); 
+
+----------------------------
+
+INSERT INTO Classroom VALUES
+(1, 'Grade 1 - A', 30),
+(2, 'Grade 1 - B', 28), 
+(3, 'Grade 2 - A', 32), 
+(4, 'Grade 2 - B', 29), 
+(5, 'Grade 3 - A', 31);
+
+---------------------------
+INSERT INTO Course VALUES
+(201, 'Algebra I', 101),
+(202, 'Grammar Basics', 102), 
+(203, 'Biology Fundamentals', 103), 
+(204, 'World History', 104), 
+(205, 'Introduction to Physics', 105); 
+----------------------------
+INSERT INTO Student VALUES
+(301, 'Alice Johnson', '2012-05-10', 'Female', 1), 
+(302, 'David Williams', '2011-07-22', 'Male', 2), 
+(303, 'Sophia Martinez', '2012-03-18', 'Female', 3), 
+(304, 'James Anderson', '2011-09-30', 'Male', 4), 
+(305, 'Olivia Thomas', '2012-01-25', 'Female', 5);
+----------------------------
+INSERT INTO Attendance VALUES
+(401, 301, 201, '2025-02-12', 'Present'), 
+(402, 302, 202, '2025-02-12', 'Absent'), 
+(403, 303, 203, '2025-02-12', 'Present'), 
+(404, 304, 204, '2025-02-12', 'Present'), 
+(405, 305, 205, '2025-02-12', 'Absent');
+___________________________________________________3
+Q1- SELECT * FROM student 
+WHERE gender='Female';
+
+---
+Q2- SELECT * FROM Teacher
+WHERE specialization='Mathematics' OR specialization='Physics';
+
+---
+Q3- SELECT * FROM Student
+WHERE dob BETWEEN '2011-01-01' AND '2012-12-31';
+--
+Q4- SELECT * FROM Course
+ORDER by Name ASC ;
+
+---
+Q5- SELECT * FROM Student
+WHERE Name LIKE 'A%';
+---
+Q6- SELECT * FROM Student
+WHERE Name LIKE '%a%';
+---
+Q7- SELECT MIN(capacity)
+FROM classroom
+---
+Q8- SELECT MAX(capacity)
+FROM classroom
+---
+Q9- SELECT AVG(capacity)
+FROM classroom
+---
+Q10-SELECT COUNT(*)
+FROM Students;
+---
+Q11- SELECT ClassroomID, COUNT(*) 
+FROM Students
+GROUP BY ClassroomID;
+---
+Q12- SELECT Student.name, Classroom.name
+FROM Student
+JOIN Classroom ON Student.classroom_id = Classroom.classroom_id;
+
+---
+Q13-SELECT Course.name, Teacher.name 
+FROM Course 
+JOIN Teacher
+ ON Course.teacher_id = Teacher.teacher_id;
+---
+Q14- SELECT s.Name AS StudentName, a.Date, a.Status
+FROM Student s
+LEFT JOIN Attendance a ON s.StudentID = a.StudentID;
+
+---
+Q15- SELECT c.CourseName, t.Name AS TeacherName
+FROM Course c
+LEFT JOIN Teacher t ON c.TeacherID = t.TeacherID;
+
+---
+Q16- SELECT t.Name AS TeacherName, c.CourseName
+FROM Teacher t
+LEFT JOIN Course c ON t.TeacherID = c.TeacherID;
+
+---
+Q17- SELECT DISTINCT s.Name AS StudentName
+FROM Student s
+JOIN Attendance a ON s.StudentID = a.StudentID
+WHERE a.Status = 'Present';
+
+---
+Q18- SELECT s.Name AS StudentName
+FROM Student s
+LEFT JOIN Attendance a ON s.StudentID = a.StudentID
+WHERE a.AttendanceID IS NULL;
+
+---
+Q19- SELECT CourseID, COUNT(*) AS EnrolledStudents
+FROM Attendance
+GROUP BY CourseID
+HAVING COUNT(*) > 1;
+
+---
+Q20- SELECT t.TeacherID, t.Name, COUNT(*) AS NumberOfCourses
+FROM Teacher t
+JOIN Course c ON t.TeacherID = c.TeacherID
+GROUP BY t.TeacherID, t.Name
+ORDER BY NumberOfCourses DESC
+LIMIT 1;
+
+---
+Q21- SELECT s.Name AS StudentName
+FROM Student s
+JOIN Classroom c ON s.ClassroomID = c.ClassroomID
+WHERE c.Capacity = (SELECT MAX(Capacity) FROM Classroom);
+
+---
+Q22- SELECT c.CourseName
+FROM Course c
+JOIN Teacher t ON c.TeacherID = t.TeacherID
+WHERE t.Name = 'John Smith';
+
+---
+Q23- SELECT s.Name AS StudentName
+FROM Student s
+JOIN Attendance a ON s.StudentID = a.StudentID
+JOIN Course c ON a.CourseID = c.CourseID
+WHERE c.CourseName = 'Algebra I' AND a.Status = 'Present';
+
+---
+Q24- SELECT Specialization, COUNT(*) AS NumberOfTeachers
+FROM Teacher
+GROUP BY Specialization;
+
+---
+Q25- SELECT c.CourseName, COUNT(*) AS EnrolledStudents
+FROM Course c
+JOIN Attendance a ON c.CourseID = a.CourseID
+GROUP BY c.CourseName
+ORDER BY EnrolledStudents DESC
+LIMIT 3;
+
+---
+Q26- SELECT s.Name AS StudentName
+FROM Student s
+WHERE s.StudentID NOT IN (
+    SELECT a.StudentID
+    FROM Attendance a
+    WHERE a.Status = 'Absent'
+);
+
+---
